@@ -1,15 +1,31 @@
 from DocumentGraph import DocumentGraph
 import pickle
-from multiprocessing import Process
+from multiprocessing import Pool
+import argparse
 
-def process_document_set(document_set, start, set_size):
-	for i in range(start, start + set_size):
+def process_document_set(process_params):
+	"""Runs a set of documents through the graph generator and outputs each as a pickle"""
+	document_set, index, set_size = process_params
+	for i in range(0, set_size):
 		document = document_set[i]
 		document_graph = DocumentGraph(document)
-		pickle.dump(document_graph, open(output_path + str(i) + ".p", "wb" ))
-		print('Completed:', i, 'document')
+		pickle.dump(document_graph, open(output_path + str(index) + ".p", "wb" ))
+		index += 1
+		print('Completed:', index, 'document')
+
+def partition_documents(documents, partitions, num_documents):
+	"""Groups the documents into sets of size num_documents / partitions"""
+	document_sets = []
+	step = int(num_documents / partitions)
+	for i in range(0, num_documents, step):
+		document_sets.append(documents[i:i + step])
+	return document_sets
 
 if __name__ == "__main__":
+
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-threads', nargs='?', default=1, type=int, help='Enter number of threads to process the dataset.')
+	args = parser.parse_args()
 
 	corpus_path = 'apnews/apnews.dat'
 	output_path = 'pickle_data/'
@@ -19,21 +35,16 @@ if __name__ == "__main__":
 		corpus.close()
 
 	num_documents = len(documents)
+	partitions = args.threads
+	partition_size = int(num_documents / partitions)
 	
-	first_document_set = documents[0:int(num_documents/3)]
-	second_document_set = documents[int(num_documents/3):int(num_documents/3+num_documents/3)]
-	third_document_set = documents[int(num_documents/3+num_documents/3):]
+	document_sets = partition_documents(documents, partitions, num_documents)
 
-	first_set_process = Process(target=process_document_set, args=(first_document_set, 0, int(num_documents/3)))
-	first_set_process.start()
-	first_set_process.join()
+	param_sets = []
+	index = 0
+	for i in range(partitions):
+		param_sets.append((document_sets[i], index, partition_size))
+		index += partition_size
 
-
-	second_set_process = Process(target=process_document_set, args=(second_document_set, int(num_documents/3), int(num_documents/3 + num_documents/3)))
-	second_set_process.start()
-	second_set_process.join()
-
-	third_set_process = Process(target=process_document_set, args=(third_document_set, int(num_documents/3+num_documents/3), num_documents))
-	third_set_process.start()
-	third_set_process.join()
-
+	p = Pool(args.threads)
+	p.map(process_document_set, param_sets)
