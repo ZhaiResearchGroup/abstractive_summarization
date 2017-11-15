@@ -2,9 +2,9 @@ import gensim
 from nltk import tokenize
 import collections
 
-DEFAULT_VEC_SIZE = 50
-DEFAULT_MIN_WORD_COUNT = 2
-DEFAULT_TRAINING_ITERATIONS = 500
+DEFAULT_VEC_SIZE = 100
+DEFAULT_MIN_WORD_COUNT = 1
+DEFAULT_TRAINING_ITERATIONS = 100
 
 class DocumentGraph:
 
@@ -70,9 +70,10 @@ class DocumentGraph:
 		for doc_id in range(len(training_corpus)):
 			inferred_vector = trained_model.infer_vector(training_corpus[doc_id].words)
 			sims = trained_model.docvecs.most_similar([inferred_vector], topn=len(trained_model.docvecs))
-			
+
 			for sim in sims:
 				similarity_matrix[doc_id][sim[0]] = sim[1]
+
 
 		return similarity_matrix
 

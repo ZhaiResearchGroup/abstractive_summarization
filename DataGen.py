@@ -19,6 +19,7 @@ def partition_documents(documents, partitions, num_documents):
 	step = int(num_documents / partitions)
 	for i in range(0, num_documents, step):
 		document_sets.append(documents[i:i + step])
+
 	return document_sets
 
 if __name__ == "__main__":
