@@ -51,22 +51,39 @@ class DocumentGraph:
 
 		return sentence_corpus, sentence_ids
 
+	def n_similarity_unseen_docs(self, model, ds1, ds2):
+		"""
+		Compute cosine similarity between two sets of docvecs of out-of-training-set docs, as if from inference
+		"""
+
+		v1 = [get_infered_vec(doc) for doc in ds1]
+		v2 = [get_infered_vec(doc) for doc in ds2]
+		return dot(matutils.unitvec(array(v1).mean(axis=0)), matutils.unitvec(array(v2).mean(axis=0)))
+
+	def get_infered_vec(model, doc, alpha=0.1, min_alpha=0.0001, steps=5):
+		doc_words = gensim.utils.simple_preprocess(doc)
+		return model.infer_vector(doc_words=doc_words, alpha=alpha, min_alpha=min_alpha, steps=steps)
+
 	def _create_similarity_matrix(self, trained_model, sentence_corpus, similarity_matrix):
 		"""Updates a similarity matrix with the similarities between each of the sentences and all of the other sentences.
 		The i,j value contains the similarity between sentence i and sentence j.
 		"""
+		# this similairty id is w.r.t to just the sim matrix
+		#sen corpus is the list of sentences and sen id for just this doc
 		for sentence_id, sentence in sentence_corpus:
 			if len(sentence) < 1:
 				continue
 
 			sentence = gensim.utils.simple_preprocess(sentence)
 
+			# go through other sens in this doc
 			for compare_sentence_id, compare_sentence in sentence_corpus:
 				if len(compare_sentence) < 1:
 					continue
 
 				compare_sentence = gensim.utils.simple_preprocess(compare_sentence)
 
+				# this n_sim is gensim.models.KeyedVectors.n_similarity
 				similarity = trained_model.n_similarity(sentence, compare_sentence)
 				similarity_matrix[sentence_id][compare_sentence_id] = similarity
 
