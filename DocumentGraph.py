@@ -66,12 +66,10 @@ class DocumentGraph:
 		"""Updates a similarity matrix with the similarities between each of the sentences and all of the other sentences.
 		The i,j value contains the similarity between sentence i and sentence j.
 		"""
-		# this similairty id is w.r.t to just the sim matrix
-		#sen corpus is the list of sentences and sen id for just this doc
 		for sentence_id, sentence in sentence_corpus:
 			for compare_sentence_id, compare_sentence in sentence_corpus:
 				similarity = trained_model.docvecs.similarity_unseen_docs(model= trained_model, doc_words1 = sentence, doc_words2 = compare_sentence)
-				
+
 				similarity_matrix[sentence_id][compare_sentence_id] = similarity
 
 		return similarity_matrix
