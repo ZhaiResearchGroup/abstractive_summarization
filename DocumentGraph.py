@@ -8,12 +8,12 @@ DEFAULT_TRAINING_ITERATIONS = 100
 
 class DocumentGraph:
 
-	def __init__(self, document, sentence_tags, vec_size = DEFAULT_VEC_SIZE, min_word_count = DEFAULT_MIN_WORD_COUNT, training_iterations = DEFAULT_TRAINING_ITERATIONS):
+	def __init__(self, document, trained_model, vec_size = DEFAULT_VEC_SIZE, min_word_count = DEFAULT_MIN_WORD_COUNT, training_iterations = DEFAULT_TRAINING_ITERATIONS):
 		self.base_document = document
 		self.training_parameters = (vec_size, min_word_count, training_iterations)
-		self.similarity_matrix, self.sentence_ids = self.build_matrix(document)
+		self.similarity_matrix, self.sentence_ids = self.build_matrix(document, trained_model)
 
-	def build_matrix(self, document):
+	def build_matrix(self, document, trained_model):
 		"""Returns a NxN matrix where the rows and columns are the sentence embeddings
 		of the sentences in the document and the i,j entry is the similarity between 
 		sentence embedding i and sentence embedding j
@@ -26,8 +26,6 @@ class DocumentGraph:
 
 		if num_sentences < 1:
 			return similarity_matrix, sentence_ids
-
-		trained_model = gensim.models.doc2vec.Doc2Vec.load('model/apnews_model.model')
 
 		similarity_matrix = self._create_similarity_matrix(trained_model, sentence_corpus, similarity_matrix)
 
@@ -56,18 +54,9 @@ class DocumentGraph:
 		The i,j value contains the similarity between sentence i and sentence j.
 		"""
 		for sentence_id, sentence in sentence_corpus:
-			if len(sentence) < 1:
-				continue
-
-			sentence = gensim.utils.simple_preprocess(sentence)
-
 			for compare_sentence_id, compare_sentence in sentence_corpus:
-				if len(compare_sentence) < 1:
-					continue
+				similarity = trained_model.docvecs.similarity_unseen_docs(model= trained_model, doc_words1 = sentence, doc_words2 = compare_sentence)
 
-				compare_sentence = gensim.utils.simple_preprocess(compare_sentence)
-
-				similarity = trained_model.n_similarity(sentence, compare_sentence)
 				similarity_matrix[sentence_id][compare_sentence_id] = similarity
 
 		return similarity_matrix

@@ -2,13 +2,14 @@ from DocumentGraph import DocumentGraph
 import pickle
 from multiprocessing import Pool
 import argparse
+import gensim
 
 def process_document_set(process_params):
 	"""Runs a set of documents through the graph generator and outputs each as a pickle"""
-	document_set, index, set_size = process_params
+	document_set, index, set_size, model = process_params
 	for i in range(0, set_size):
 		document = document_set[i]
-		document_graph = DocumentGraph(document)
+		document_graph = DocumentGraph(document, model)
 		pickle.dump(document_graph, open(output_path + str(index) + ".p", "wb" ))
 		index += 1
 		print('Completed:', index, 'document')
@@ -30,6 +31,8 @@ if __name__ == "__main__":
 
 	corpus_path = 'apnews/apnews.dat'
 	output_path = 'pickle_data/'
+	model_path = 'model/apnews_model.model'
+	model = gensim.models.doc2vec.Doc2Vec.load('model/apnews_model.model')
 
 	with open(corpus_path, 'r') as corpus:
 		documents = corpus.readlines()
@@ -44,7 +47,7 @@ if __name__ == "__main__":
 	param_sets = []
 	index = 0
 	for i in range(partitions):
-		param_sets.append((document_sets[i], index, partition_size))
+		param_sets.append((document_sets[i], index, partition_size, model))
 		index += partition_size
 
 	p = Pool(args.threads)
