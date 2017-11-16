@@ -8,7 +8,7 @@ DEFAULT_TRAINING_ITERATIONS = 100
 
 class DocumentGraph:
 
-	def __init__(self, document, vec_size = DEFAULT_VEC_SIZE, min_word_count = DEFAULT_MIN_WORD_COUNT, training_iterations = DEFAULT_TRAINING_ITERATIONS):
+	def __init__(self, document, sentence_tags, vec_size = DEFAULT_VEC_SIZE, min_word_count = DEFAULT_MIN_WORD_COUNT, training_iterations = DEFAULT_TRAINING_ITERATIONS):
 		self.base_document = document
 		self.training_parameters = (vec_size, min_word_count, training_iterations)
 		self.similarity_matrix, self.sentence_ids = self.build_matrix(document)
@@ -21,15 +21,15 @@ class DocumentGraph:
 		sentences = tokenize.sent_tokenize(document)
 		num_sentences = len(sentences)
 		
-		training_corpus, sentence_ids = self._build_corpus(sentences, num_sentences)
+		sentence_corpus, sentence_ids = self._build_corpus(sentences, num_sentences)
 		similarity_matrix = self._init_similarity_matrix(num_sentences)
 
 		if num_sentences < 1:
 			return similarity_matrix, sentence_ids
 
-		trained_model = self._train_model(training_corpus)
+		trained_model = gensim.models.doc2vec.Doc2Vec.load('model/apnews_model.model')
 
-		similarity_matrix = self._update_similarity_matrix(trained_model, training_corpus, similarity_matrix)
+		similarity_matrix = self._create_similarity_matrix(trained_model, sentence_corpus, similarity_matrix)
 
 		return similarity_matrix, sentence_ids
 
@@ -43,37 +43,32 @@ class DocumentGraph:
 		training_corpus: a list of tagged document objects where each object is a sentence
 		"""
 		sentence_ids = {}
-		training_corpus = []
+		sentence_corpus = []
 
 		for i in range(num_sentences):
-			tagged_document = gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(sentences[i]), [i])
-			training_corpus.append(tagged_document)
-			sentence_ids[i] = tagged_document
+			sentence_corpus.append((i, sentences[i]))
+			sentence_ids[i] = sentences[i]
 
-		return training_corpus, sentence_ids
+		return sentence_corpus, sentence_ids
 
-	def _train_model(self, training_corpus):
-		"""Returns a trained model given the training parameters and a corpus"""
-		size, min_count, iterations = self.training_parameters
-		model = gensim.models.doc2vec.Doc2Vec(size=size, min_count=min_count, iter=iterations)
-
-		model.build_vocab(training_corpus)
-
-		model.train(training_corpus, total_examples=model.corpus_count, epochs=model.iter)
-
-		return model
-
-	def _update_similarity_matrix(self, trained_model, training_corpus, similarity_matrix):
+	def _create_similarity_matrix(self, trained_model, sentence_corpus, similarity_matrix):
 		"""Updates a similarity matrix with the similarities between each of the sentences and all of the other sentences.
 		The i,j value contains the similarity between sentence i and sentence j.
 		"""
-		for doc_id in range(len(training_corpus)):
-			inferred_vector = trained_model.infer_vector(training_corpus[doc_id].words)
-			sims = trained_model.docvecs.most_similar([inferred_vector], topn=len(trained_model.docvecs))
+		for sentence_id, sentence in sentence_corpus:
+			if len(sentence) < 1:
+				continue
 
-			for sim in sims:
-				similarity_matrix[doc_id][sim[0]] = sim[1]
+			sentence = gensim.utils.simple_preprocess(sentence)
 
+			for compare_sentence_id, compare_sentence in sentence_corpus:
+				if len(compare_sentence) < 1:
+					continue
+
+				compare_sentence = gensim.utils.simple_preprocess(compare_sentence)
+
+				similarity = trained_model.n_similarity(sentence, compare_sentence)
+				similarity_matrix[sentence_id][compare_sentence_id] = similarity
 
 		return similarity_matrix
 
