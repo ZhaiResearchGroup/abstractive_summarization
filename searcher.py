@@ -20,7 +20,7 @@ class Searcher:
         # create a search query
         query = metapy.index.Document()
         query.content(raw_query)
-
+        
         # search the index
         search_results = self.ranker.score(self.idx, query, num_results=num_results)
         return search_results
