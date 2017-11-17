@@ -1,6 +1,7 @@
 import gensim
 from nltk import tokenize
 import collections
+import numpy as np
 
 DEFAULT_VEC_SIZE = 100
 DEFAULT_MIN_WORD_COUNT = 1
@@ -72,6 +73,6 @@ class DocumentGraph:
 
 				similarity_matrix[sentence_id][compare_sentence_id] = similarity
 
-		return similarity_matrix
+		return np.array(similarity_matrix)
 
 
