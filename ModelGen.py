@@ -33,7 +33,7 @@ if __name__ == "__main__":
 		sentences = tokenize.sent_tokenize(document)
 		
 		for sentence in sentences:
-			tagged_sentence = gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(sentence), [s_i])
+			tagged_sentence = gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(sentence), [sentence_count])
 			training_corpus.append(tagged_sentence)
 			sentence_count += 1
 
