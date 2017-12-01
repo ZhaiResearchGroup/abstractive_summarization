@@ -20,10 +20,16 @@ class Searcher:
         # create a search query
         query = metapy.index.Document()
         query.content(raw_query)
-        
+
         # search the index
         search_results = self.ranker.score(self.idx, query, num_results=num_results)
         return search_results
+
+    def get_stringified_list(self, search_results):
+        '''
+            Return a list of sentences from the search results
+        '''
+        return [self.idx.metadata(doc_id).get('content') for (doc_id, score) in search_results]
 
     def stringify_search_results(self, search_results):
         '''
