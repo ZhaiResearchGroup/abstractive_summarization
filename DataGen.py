@@ -31,8 +31,8 @@ if __name__ == "__main__":
 
 	corpus_path = 'apnews/apnews.dat'
 	output_path = 'pickle_data/'
-	model_path = 'model/apnews_model.model'
-	model = gensim.models.doc2vec.Doc2Vec.load('model/apnews_model.model')
+	model_path = 'model/apnews_sen_model.model'
+	model = gensim.models.doc2vec.Doc2Vec.load('model/apnews_sen_model.model')
 
 	with open(corpus_path, 'r') as corpus:
 		documents = corpus.readlines()
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 	num_documents = len(documents)
 	partitions = args.threads
 	partition_size = int(num_documents / partitions)
-	
+
 	document_sets = partition_documents(documents, partitions, num_documents)
 
 	param_sets = []

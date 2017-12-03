@@ -15,7 +15,7 @@ def main():
     parser.add_argument("-q", "--query", nargs='?', default='Airbus Subsidies', type=str, help='query')
     args = parser.parse_args()
 
-    corpus_path = 'apnews/apnews_sen.dat'
+    corpus_path = 'apnews_sen/apnews_sen.dat'
 
     with open(corpus_path, 'r') as corpus:
         combined_document = corpus.read()
@@ -49,7 +49,8 @@ def main():
     tokenized_sentences = tokenizer.remove_stopwords_and_clean(combined_document)
     # M_adj = graph_builder.create_sentence_adj_matrix(tokenized_sentences).astype(float)
 
-    word_model = ModelGen.train_model(tokenized_sentences)
+    # word_model = ModelGen.train_model(tokenized_sentences)
+    word_model = gensim.models.doc2vec.Doc2Vec.load('model/apnews_sen_model.model')
     graph_model = DocumentGraph.DocumentGraph(tokenized_sentences, word_model)
     M_adj = graph_model.similarity_matrix
 

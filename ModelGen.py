@@ -1,5 +1,6 @@
 import gensim
 from nltk import tokenize
+import tokenizer
 
 DEFAULT_VEC_SIZE = 100
 DEFAULT_MIN_WORD_COUNT = 1
@@ -24,7 +25,7 @@ def train_model(training_corpus, training_parameters=(DEFAULT_VEC_SIZE, DEFAULT_
 
 if __name__ == "__main__":
 
-	dataset_path = 'apnews/apnews.dat'
+	dataset_path = 'apnews_sen/apnews_sen.dat'
 	training_corpus = []
 
 	with open(dataset_path, 'r') as dataset:
@@ -33,19 +34,21 @@ if __name__ == "__main__":
 
 	print('Data Read.')
 
-	sentence_count = 0
-	document_count = 0 # temp for testing
-	for document in documents:
-		sentences = tokenize.sent_tokenize(document)
+	training_corpus = tokenizer.remove_stopwords_and_clean(documents[:20])
 
-		for sentence in sentences:
-			tagged_sentence = gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(sentence), [sentence_count])
-			training_corpus.append(tagged_sentence)
-			sentence_count += 1
-
-		document_count += 1 # temp for testing
-		if document_count > 20:
-			break
+	# sentence_count = 0
+	# document_count = 0 # temp for testing
+	# for document in documents:
+	# 	sentences = tokenize.sent_tokenize(document)
+    #
+	# 	for sentence in sentences:
+	# 		tagged_sentence = gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(sentence), [sentence_count])
+	# 		training_corpus.append(tagged_sentence)
+	# 		sentence_count += 1
+    #
+	# 	document_count += 1 # temp for testing
+	# 	if document_count > 20:
+	# 		break
 
 	print('Corpus Generated.')
 
@@ -54,6 +57,6 @@ if __name__ == "__main__":
 
 	print('Training Finished.')
 
-	model.save('model/apnews_model.model')
+	model.save('model/apnews_sen_model.model')
 
 	print('Model Saved.')
