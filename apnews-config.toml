@@ -1,5 +1,6 @@
 prefix = "."
-dataset = "apnews"
+# dataset = "apnews"
+dataset = "apnews_sen"
 corpus = "line.toml"
 index = "idx"
 query-judgements = "qrels.txt"

@@ -1,0 +1,78 @@
+diff --git a/include/meta/index/ranker/all.h b/include/meta/index/ranker/all.h
+index a08593c..16ffcb2 100644
+--- a/include/meta/index/ranker/all.h
++++ b/include/meta/index/ranker/all.h
+@@ -5,3 +5,4 @@
+ #include "meta/index/ranker/lm_ranker.h"
+ #include "meta/index/ranker/okapi_bm25.h"
+ #include "meta/index/ranker/pivoted_length.h"
++#include "meta/index/ranker/pl2.h"
+diff --git a/src/index/ranker/CMakeLists.txt b/src/index/ranker/CMakeLists.txt
+index e00a24a..2c13034 100644
+--- a/src/index/ranker/CMakeLists.txt
++++ b/src/index/ranker/CMakeLists.txt
+@@ -1,11 +1,12 @@
+-project(meta-ranker)
+ 
++project(meta-ranker)
+ add_library(meta-ranker absolute_discount.cpp
+                         dirichlet_prior.cpp
+                         jelinek_mercer.cpp
+                         lm_ranker.cpp
+                         okapi_bm25.cpp
+                         pivoted_length.cpp
++                        pl2.cpp
+                         ranker.cpp
+                         ranker_factory.cpp)
+ target_link_libraries(meta-ranker meta-index)
+diff --git a/src/index/ranker/ranker_factory.cpp b/src/index/ranker/ranker_factory.cpp
+index ed2efb8..6df0efd 100644
+--- a/src/index/ranker/ranker_factory.cpp
++++ b/src/index/ranker/ranker_factory.cpp
+@@ -26,6 +26,7 @@ ranker_factory::ranker_factory()
+     reg<jelinek_mercer>();
+     reg<okapi_bm25>();
+     reg<pivoted_length>();
++    reg<pl2>();
+ }
+ 
+ std::unique_ptr<ranker> make_ranker(const cpptoml::table& config)
+@@ -51,6 +52,7 @@ ranker_loader::ranker_loader()
+     reg<jelinek_mercer>();
+     reg<okapi_bm25>();
+     reg<pivoted_length>();
++    reg<pl2>();
+ }
+ 
+ std::unique_ptr<ranker> load_ranker(std::istream& in)
+diff --git a/src/index/tools/query_runner.cpp b/src/index/tools/query_runner.cpp
+index 252097f..5688a87 100644
+--- a/src/index/tools/query_runner.cpp
++++ b/src/index/tools/query_runner.cpp
+@@ -54,6 +54,9 @@ int main(int argc, char* argv[])
+             "config file needs a \"query-path\" parameter"};
+     std::ifstream queries{*query_path};
+ 
++    auto ranker_name = group->get_as<std::string>("method");
++    std::ofstream ap_file{*ranker_name + ".avg_p.txt"};
++
+     std::unique_ptr<index::ir_eval> eval;
+     try
+     {
+@@ -100,11 +103,15 @@ int main(int argc, char* argv[])
+                                   << std::endl
+                                   << std::endl;
+                     }
+-                    if (result_num++ == 10)
++                    if (result_num++ == 5)
+                         break;
+                 }
+                 if (eval)
++                {
+                     eval->print_stats(ranking, query_id{i - 1});
++                    ap_file << eval->avg_p(ranking, query_id{i - 1}, 5)
++                            << std::endl;
++                }
+                 std::cout << std::endl;
+             }
+         });

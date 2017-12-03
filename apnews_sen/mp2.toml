@@ -1,0 +1,60 @@
+###############################################
+#
+# MeTA config file for MP 2, CS 410 Spring 2016
+#
+###############################################
+
+#
+# Dataset configuration
+#
+
+dataset = "apnews"
+corpus = "line.toml"
+forward-index = "apnews-fwd"
+inverted-index = "apnews-inv"
+indexer-ram-budget = 1024
+
+#
+# Global path configuration
+#
+
+stop-words = "../data/lemur-stopwords.txt"
+libsvm-modules = "../deps/libsvm-modules/"
+prefix = "../data/"
+function-words = "../data/function-words.txt"
+punctuation = "../data/sentence-boundaries/sentence-punctuation.txt"
+start-exceptions = "../data/sentence-boundaries/sentence-start-exceptions.txt"
+end-exceptions = "../data/sentence-boundaries/sentence-end-exceptions.txt"
+query-judgements = "../data/apnews/qrels.txt"
+query-path = "../data/apnews/queries.txt"
+
+#
+# Rankers section; all methods and possible parameters shown. Only specify one
+# method at a time by commenting out ones you do not want.
+#
+
+[ranker]
+method = "bm25"
+k1 = 1.2
+b = 0.75
+k3 = 500
+#method = "pivoted-length"
+#s = 0.2
+#method = "absolute-discount"
+#delta = 0.7
+#method = "jelinek-mercer"
+#lambda = 0.7
+#method = "dirichlet-prior"
+#mu = 2000.0
+#method = "pl2"
+#c = 1.0
+
+#
+# Analyzers section; you don't need to modify this part (unless you want to
+# experiment)
+#
+
+[[analyzers]]
+method = "ngram-word"
+ngram = 1
+filter = "default-unigram-chain"
