@@ -13,6 +13,7 @@ N_docs = float(len(documents))
 sentences = list()
 for i, doc in enumerate(documents):
     sentences.extend(tokenizer.tokenize_text(doc))
+
     if i % 10000 == 0:
         print i, "out of", N_docs, "(" + str(100 * i / N_docs) + "%)"
 

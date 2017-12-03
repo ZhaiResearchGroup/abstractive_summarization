@@ -6,6 +6,8 @@ from searcher import *
 import tokenizer
 import graph_builder
 import textrank
+import DocumentGraph
+import ModelGen
 
 
 def main():
@@ -23,13 +25,14 @@ def main():
     combined_document = combined_document[:1000]
     documents = documents[:1695]
 
+    print (len(documents))
+    print (len(set(documents)))
+
     N_docs = len(documents)
 
     # run BM25
     searcher = Searcher('apnews-config.toml')
     search_results = searcher.search(args.query, num_results=N_docs)
-
-    # print (args.query, search_results)
 
     dupe_dict = dict()
     for (doc_id,_) in search_results:
@@ -41,9 +44,15 @@ def main():
 
     combined_document = searcher.get_stringified_list(search_results)
 
+
     # run textrank from law__--less
-    tokenized_sentences = tokenizer.remove_stopwords_and_clean(tokenizer.tokenize_text(' '.join(combined_document)))
-    M_adj = graph_builder.create_sentence_adj_matrix(tokenized_sentences).astype(float)
+    tokenized_sentences = tokenizer.remove_stopwords_and_clean(combined_document)
+    # M_adj = graph_builder.create_sentence_adj_matrix(tokenized_sentences).astype(float)
+
+    word_model = ModelGen.train_model(tokenized_sentences)
+    graph_model = DocumentGraph.DocumentGraph(tokenized_sentences, word_model)
+    M_adj = graph_model.similarity_matrix
+
     M_adj = M_adj / np.sum(M_adj, axis=1)
     eigen_vectors = np.array(textrank.textrank(M_adj, d=.85))
     scores = textrank.get_sentence_scores(tokenized_sentences, eigen_vectors)
@@ -62,6 +71,7 @@ def main():
     sorted_docs = [doc for (avg_score, doc) in sorted(zip(averaged_scores, combined_document), reverse=True)]
 
     print (sorted_docs)
+
 
 
 if __name__ == '__main__':

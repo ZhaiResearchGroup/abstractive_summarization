@@ -5,10 +5,16 @@ DEFAULT_VEC_SIZE = 100
 DEFAULT_MIN_WORD_COUNT = 1
 DEFAULT_TRAINING_ITERATIONS = 100
 
-def train_model(training_corpus, training_parameters):
+def train_model(training_corpus, training_parameters=(DEFAULT_VEC_SIZE, DEFAULT_MIN_WORD_COUNT, DEFAULT_TRAINING_ITERATIONS)):
 		"""Returns a trained model given the training parameters and a corpus"""
 		size, min_count, iterations = training_parameters
 		model = gensim.models.doc2vec.Doc2Vec(size=size, min_count=min_count, iter=iterations)
+
+		for (i, sen) in enumerate(training_corpus[:5]):
+			if i < 5:
+				print(sen)
+
+		training_corpus = [gensim.models.doc2vec.TaggedDocument(sen, [i]) for (i, sen) in enumerate(training_corpus)]
 
 		model.build_vocab(training_corpus)
 
@@ -31,7 +37,7 @@ if __name__ == "__main__":
 	document_count = 0 # temp for testing
 	for document in documents:
 		sentences = tokenize.sent_tokenize(document)
-		
+
 		for sentence in sentences:
 			tagged_sentence = gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(sentence), [sentence_count])
 			training_corpus.append(tagged_sentence)
@@ -51,8 +57,3 @@ if __name__ == "__main__":
 	model.save('model/apnews_model.model')
 
 	print('Model Saved.')
-
-
-
-
-

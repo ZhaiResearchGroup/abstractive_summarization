@@ -9,19 +9,19 @@ DEFAULT_TRAINING_ITERATIONS = 100
 
 class DocumentGraph:
 
-	def __init__(self, document, trained_model, vec_size = DEFAULT_VEC_SIZE, min_word_count = DEFAULT_MIN_WORD_COUNT, training_iterations = DEFAULT_TRAINING_ITERATIONS):
-		self.base_document = document
+	def __init__(self, sentences, trained_model, vec_size = DEFAULT_VEC_SIZE, min_word_count = DEFAULT_MIN_WORD_COUNT, training_iterations = DEFAULT_TRAINING_ITERATIONS):
+		self.base_document = ' '.join([' '.join(sen) + '.' for sen in sentences])
 		self.training_parameters = (vec_size, min_word_count, training_iterations)
-		self.similarity_matrix, self.sentence_ids = self.build_matrix(document, trained_model)
+		self.similarity_matrix, self.sentence_ids = self.build_matrix(sentences, trained_model)
 
-	def build_matrix(self, document, trained_model):
+	def build_matrix(self, sentences, trained_model):
 		"""Returns a NxN matrix where the rows and columns are the sentence embeddings
-		of the sentences in the document and the i,j entry is the similarity between 
+		of the sentences in the document and the i,j entry is the similarity between
 		sentence embedding i and sentence embedding j
 		"""
-		sentences = tokenize.sent_tokenize(document)
+		# sentences = tokenize.sent_tokenize(document)
 		num_sentences = len(sentences)
-		
+
 		sentence_corpus, sentence_ids = self._build_corpus(sentences, num_sentences)
 		similarity_matrix = self._init_similarity_matrix(num_sentences)
 
@@ -74,5 +74,3 @@ class DocumentGraph:
 				similarity_matrix[sentence_id][compare_sentence_id] = similarity
 
 		return np.array(similarity_matrix)
-
-
