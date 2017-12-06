@@ -16,21 +16,30 @@ if __name__ == "__main__":
 	training_corpus = [gensim.models.doc2vec.TaggedDocument(sen, [i]) for (i, sen) in enumerate(sentences)]
 
 	print('Data Read.')
+	index = 0
+	fully_trained = False
 
 	if os.listdir(model_dir) == []:
 		print('No existing model found. Using new model.')
 		model = get_new_model(training_corpus)
+	elif len(os.listdir(model_dir)) == 1:
+		print('Model is fully trained on the apnews dataset. No more training will occur.') 
+		fully_trained = True
 	else:
 		print('Using existing model.')
 		model_path = model_dir + os.listdir(model_dir)[0]
+		index_path = model_dir + os.listdir(model_dir)[1]
+		index = int(open(index_path, 'r').readlines()[0].replace('\n', ''))
 		model = gensim.models.doc2vec.Doc2Vec.load(model_path)
 
-	print('Beginning training.')
+	if not fully_trained:
+		print('Beginning training.')
 
-	train_model(model, training_corpus, chunk_size)
+		train_model(model, training_corpus, chunk_size, index)
 
-	print('Training Finished.')
+		print('Training Finished.')
 
-	model.save('../model/apnews_sen_model.model')
+		os.remove(model_dir + os.listdir(model_dir)[1])
+		model.save('../model/apnews_sen_model.model')
 
-	print('Model Saved.')
+		print('Model Saved.')

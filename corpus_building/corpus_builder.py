@@ -7,6 +7,3 @@ if __name__ == "__main__":
     out_dir = '../corpus/'
 
     extract_all_text_and_store(source_dir, out_dir)
-
-    all_sentences = load_all_sentences('../corpus/')
-    print(all_sentences)
