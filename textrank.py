@@ -10,7 +10,7 @@ import scipy.linalg as spl
 
 '''
 len_adj_matrix: The size of the adj matrix
-returns       : A nunpy array filled with 1/(size of adj matrix)
+returns       : A numpy array filled with 1/(size of adj matrix)
 '''
 def build_probability_matrix(len_adj_matrix):
     p_matrix = np.zeros(( len_adj_matrix , len_adj_matrix ))
