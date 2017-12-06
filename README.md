@@ -8,6 +8,7 @@ Now all of the sentences have been extracted from the apnews dataset and exist i
 files in the 'corpus/' directory.
 
 Once the corpus has been generated, to generate the model:
+
 3. Run python3 model_gen.py from within the model_builder directory.
 4. At any point, if you keyboard interrupt to stop training, it will finish the current chunk of sentences and save the model to the 'model/' directory. It will also save a .txt file holding the current index of the documents being trained on to begin at when the model is next trained.
 
