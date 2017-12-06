@@ -1,13 +1,13 @@
 import numpy as np
 import pandas as pd
 import argparse
-from DataGen import *
 from searcher import *
 import tokenizer
 import graph_builder
 import textrank
 import DocumentGraph
 import ModelGen
+import gensim
 
 
 def main():
