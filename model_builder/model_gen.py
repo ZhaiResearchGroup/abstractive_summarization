@@ -36,8 +36,13 @@ if __name__ == "__main__":
 	if os.listdir(model_dir) == []:
 		print('No existing model found. Using new model.')
 		model = get_new_model(training_corpus)
+<<<<<<< Updated upstream
 	elif len(filenames) == 1:
-		print('Model is fully trained on the apnews dataset. No more training will occur.') 
+		print('Model is fully trained on the apnews dataset. No more training will occur.')
+=======
+	elif len(os.listdir(model_dir)) == 1:
+		print('Model is fully trained on the apnews dataset. No more training will occur.')
+>>>>>>> Stashed changes
 		fully_trained = True
 	else:
 		print('Using existing model.')
@@ -53,7 +58,7 @@ if __name__ == "__main__":
 
 		if index_path is not None:
 			os.remove(index_path)
-			
+
 		model.save('../model/apnews_sen_model.model')
 
 		print('Model Saved.')
