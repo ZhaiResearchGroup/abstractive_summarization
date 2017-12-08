@@ -1,8 +1,7 @@
 prefix = "."
-# dataset = "apnews"
-dataset = "apnews_sen"
+dataset = "reddit_documents"
 corpus = "line.toml"
-index = "idx"
+index = "idx_reddit"
 query-judgements = "qrels.txt"
 
 [[analyzers]]
