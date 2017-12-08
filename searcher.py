@@ -29,7 +29,6 @@ class Searcher:
         '''
             Return a list of sentences from the search results
         '''
-        print (self.idx.metadata(search_results[0][0]).get('content'))
         return [self.idx.metadata(doc_id).get('content') for (doc_id, score) in search_results]
 
     def stringify_search_results(self, search_results):

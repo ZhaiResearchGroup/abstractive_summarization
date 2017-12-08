@@ -1,67 +1,52 @@
 import numpy as np
 import pandas as pd
 import argparse
-from DataGen import *
 from searcher import *
 import tokenizer
-import graph_builder
 import textrank
 import DocumentGraph
-import ModelGen
+import gensim
+
+
+META_CONFIG_PATH = 'apnews/apnews-config.toml'
+MODEL_PATH = 'model/apnews_sen_model.model'
+N_DOCS = 1695
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--query", nargs='?', default='Airbus Subsidies', type=str, help='query')
+    parser.add_argument("-c", "--config", nargs='?', default=META_CONFIG_PATH, type=str, help='path to config.toml for bm25')
+    parser.add_argument("-m", "--model", nargs='?', default=MODEL_PATH, type=str, help='path to model file')
     args = parser.parse_args()
 
-    corpus_path = 'apnews_sen/apnews_sen.dat'
-
-    with open(corpus_path, 'r') as corpus:
-        combined_document = corpus.read()
-        corpus.seek(0)
-        documents = corpus.readlines()
-
-    combined_document = combined_document[:1000]
-    documents = documents[:1695]
-
-    print (len(documents))
-    print (len(set(documents)))
-
-    N_docs = len(documents)
-
     # run BM25
-    searcher = Searcher('apnews-config.toml')
-    search_results = searcher.search(args.query, num_results=N_docs)
+    searcher = Searcher(META_CONFIG_PATH)
+    search_results = searcher.search(args.query, num_results=N_DOCS)
 
-    dupe_dict = dict()
+    # sanity check for no duplicate doc_ids
+    id_set = set()
     for (doc_id,_) in search_results:
-        if doc_id in dupe_dict:
-            print ('oh no')
-            return
+        assert doc_id not in id_set, "duplicate search result doc_id: %r" % doc_id
+        id_set.add(doc_id)
 
-        dupe_dict[doc_id] = True
+    search_sen = searcher.get_stringified_list(search_results)
 
-    combined_document = searcher.get_stringified_list(search_results)
-
-
-    # run textrank from law__--less
-    tokenized_sentences = tokenizer.remove_stopwords_and_clean(combined_document)
-    # M_adj = graph_builder.create_sentence_adj_matrix(tokenized_sentences).astype(float)
-
-    # word_model = ModelGen.train_model(tokenized_sentences)
-    word_model = gensim.models.doc2vec.Doc2Vec.load('model/apnews_sen_model.model')
+    # get M_adj matrix using doc2vec
+    tokenized_sentences = tokenizer.remove_stopwords_and_clean(search_sen)
+    word_model = gensim.models.doc2vec.Doc2Vec.load(MODEL_PATH)
     graph_model = DocumentGraph.DocumentGraph(tokenized_sentences, word_model)
     M_adj = graph_model.similarity_matrix
 
+    # run textrank
     M_adj = M_adj / np.sum(M_adj, axis=1)
     eigen_vectors = np.array(textrank.textrank(M_adj, d=.85))
     scores = textrank.get_sentence_scores(tokenized_sentences, eigen_vectors)
 
-    assert(len(combined_document) == len(scores))
+    # sanity check
+    assert len(search_sen) == len(scores), "len(search_sen) != len(scores)"
 
-    print (scores)
-
+    # average scores
     all_scores = np.ndarray((scores.shape[0], 2))
     all_scores[:, 1] = scores
     all_scores[:, 0] = [result[1] for result in search_results]
@@ -69,7 +54,7 @@ def main():
     averaged_scores = np.mean(z_scores, axis=1)
 
     # https://stackoverflow.com/questions/6618515/sorting-list-based-on-values-from-another-list
-    sorted_docs = [doc for (avg_score, doc) in sorted(zip(averaged_scores, combined_document), reverse=True)]
+    sorted_docs = [doc for (avg_score, doc) in sorted(zip(averaged_scores, search_sen), reverse=True)]
 
     print (sorted_docs)
 
