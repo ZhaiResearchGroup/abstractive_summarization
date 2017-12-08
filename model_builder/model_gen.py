@@ -1,3 +1,4 @@
+import argparse
 import sys
 sys.path.append("..") # allows for cross-directory imports
 
@@ -7,17 +8,10 @@ from model_train import train_model, get_new_model
 import os
 import gensim
 
-def get_file_in_dir(file_list, filename_keyword):
-	for filename in file_list:
-		if filename_keyword in filename:
-			return filename
-	return None
-
-if __name__ == "__main__":
-
+def main(args):
 	chunk_size = 500
-	model_dir = '../model/'
-	dataset_dir = '../corpus/'
+	model_dir = args.model_dir
+	dataset_dir = args.dataset_dir
 	sentences = dataset_loader.load_all_sentences(dataset_dir)
 	training_corpus = [gensim.models.doc2vec.TaggedDocument(sen, [i]) for (i, sen) in enumerate(sentences)]
 
@@ -54,6 +48,20 @@ if __name__ == "__main__":
 		if index_path is not None:
 			os.remove(index_path)
 
-		model.save('../model/apnews_sen_model.model')
+		model.save(args.outfile)
 
 		print('Model Saved.')
+
+def get_file_in_dir(file_list, filename_keyword):
+	for filename in file_list:
+		if filename_keyword in filename:
+			return filename
+	return None
+
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-md", "--model_dir", nargs='?', default='../model/', type=str, help='path to model dir')
+	parser.add_argument("-dd", "--dataset_dir", nargs='?', default='../corpus/', type=str, help='path to dataset dir')
+	parser.add_argument("-o", "--outfile", nargs='?', default='../model/apnews_sen_model.model', type=str, help='outfile for trained model')
+	args = parser.parse_args()
+	main(args)
