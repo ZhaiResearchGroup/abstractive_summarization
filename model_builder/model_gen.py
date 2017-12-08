@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
 		if index_path is not None:
 			os.remove(index_path)
-			
+
 		model.save('../model/apnews_sen_model.model')
 
 		print('Model Saved.')
