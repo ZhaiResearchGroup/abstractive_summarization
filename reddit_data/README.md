@@ -1,5 +1,4 @@
 # How to use
----
 
 Generate dataset
 (use -h for args)
