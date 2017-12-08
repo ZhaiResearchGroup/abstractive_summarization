@@ -1,4 +1,9 @@
 import numpy as np
+<<<<<<< HEAD
+from sklearn.metrics.pairwise import cosine_similarity
+import sys
+=======
+>>>>>>> 1bc6ecfd829dff7e69f7fff09f3979f74583fcbb
 
 '''
 adj_matrix: A matrix where each sentence is adjacent by some weight
