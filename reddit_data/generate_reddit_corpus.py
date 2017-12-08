@@ -4,7 +4,7 @@ from nltk.corpus import stopwords
 from reddit_data_reader import read_reddit_data_and_timestamps
 
 CORPUS_FILE = './corpus/reddit_corpus.dat'
-REDDIT_DATA_FILE = 'reddit_documents.dat'
+REDDIT_DATA_FILE = './reddit_documents/reddit_documents.dat'
 TIMESTAMPS_FILE = 'timestamps.dat'
 STOPWORDS_FILE = 'stopwords.txt'
 
