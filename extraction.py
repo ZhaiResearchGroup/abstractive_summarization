@@ -16,6 +16,8 @@ N_DOCS = 1695
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--query", nargs='?', default='Airbus Subsidies', type=str, help='query')
+    parser.add_argument("-c", "--config", nargs='?', default=META_CONFIG_PATH, type=str, help='path to config.toml for bm25')
+    parser.add_argument("-m", "--model", nargs='?', default=MODEL_PATH, type=str, help='path to model file')
     args = parser.parse_args()
 
     # run BM25
